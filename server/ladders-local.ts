@@ -387,7 +387,6 @@ export class LadderStore {
 	calculateGlicko(rating: number, rd: number, opponentRating: number, opponentRd: number, score: number): [number, number] {
 		// Glicko-1 system constants
 		const q = Math.log(10) / 400;
-		const c = Math.sqrt((350 * 350 - 30 * 30) / 365); // Rating period constant
 
 		// Calculate g(RD) function
 		const g = (deviation: number) => 1 / Math.sqrt(1 + 3 * Math.pow(q * deviation, 2) / Math.pow(Math.PI, 2));
@@ -401,11 +400,11 @@ export class LadderStore {
 		// New rating
 		const newRating = rating + (q / (1 / Math.pow(rd, 2) + 1 / d_squared)) * g(opponentRd) * (score - E);
 
-		// New rating deviation
+		// New rating deviation (decreases with each game)
 		const newRd = Math.sqrt(1 / (1 / Math.pow(rd, 2) + 1 / d_squared));
 
-		// Apply time-based RD increase (simplified - normally done at period end)
-		const finalRd = Math.min(350, Math.sqrt(Math.pow(newRd, 2) + Math.pow(c, 2)));
+		// Ensure RD doesn't go below minimum (30) or above maximum (350)
+		const finalRd = Math.max(30, Math.min(350, newRd));
 
 		return [Math.round(newRating * 10) / 10, Math.round(finalRd * 10) / 10];
 	}
