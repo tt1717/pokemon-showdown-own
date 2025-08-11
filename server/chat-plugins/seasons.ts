@@ -143,14 +143,19 @@ export function generateFormatSchedule() {
 }
 
 export async function getLadderTop(format: string) {
-	try {
-		const results = await Net(`https://${Config.routes.root}/ladder/?format=${toID(format)}&json`).get();
-		const reply = JSON.parse(results);
-		return reply.toplist;
-	} catch (e) {
-		Monitor.crashlog(e, "A season ladder request");
-		return null;
-	}
+  // Don’t even try if we don’t have a ladder backend configured
+  if (!Config.ladders || !Config.routes?.root) return null;
+  try {
+    const url = `https://${Config.routes.root}/ladder/?format=${toID(format)}&json`;
+    const results = await Net(url).get();
+    const reply = JSON.parse(results);
+    return Array.isArray(reply?.toplist) ? reply.toplist : null;
+  } catch (e) {
+    // was: Monitor.crashlog(e, "A season ladder request");
+    // downgrade to debug/no-op to avoid red popups
+    Monitor.debug?.(`season ladder fetch failed for ${format}: ${e}`);
+    return null;
+  }
 }
 
 export async function updateBadgeholders() {
