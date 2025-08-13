@@ -79,8 +79,8 @@ export class RoundRobin {
 			scores: players.map(player => player.score),
 		};
 	}
-	freezeBracket(players: TournamentPlayer[]) {
-		this.players = players;
+	freezeBracket(players: TournamentPlayer[], seedOrder?: TournamentPlayer[]) {
+		this.players = seedOrder && seedOrder.length ? seedOrder : players;
 		this.isBracketFrozen = true;
 
 		this.matches = players.map(

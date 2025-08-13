@@ -403,8 +403,8 @@ export class LadderStore {
 		// New rating deviation (decreases with each game)
 		const newRd = Math.sqrt(1 / (1 / Math.pow(rd, 2) + 1 / d_squared));
 
-		// Ensure RD doesn't go below minimum (30) or above maximum (350)
-		const finalRd = Math.max(30, Math.min(350, newRd));
+		// Ensure RD doesn't go below minimum (10) or above maximum (350)
+		const finalRd = Math.max(10, Math.min(350, newRd));
 
 		return [Math.round(newRating * 10) / 10, Math.round(finalRd * 10) / 10];
 	}
