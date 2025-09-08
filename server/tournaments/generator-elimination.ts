@@ -179,7 +179,7 @@ export class Elimination {
 			rootNode: this.treeRoot.toJSON(),
 		};
 	}
-	freezeBracket(players: TournamentPlayer[]) {
+	freezeBracket(players: TournamentPlayer[], seedOrder?: TournamentPlayer[]) {
 		if (!players.length) throw new Error(`No players in tournament`);
 
 		this.players = players;
@@ -188,7 +188,8 @@ export class Elimination {
 		// build the winner's bracket
 		let tree: ElimTree = null!;
 
-		for (const user of Utils.shuffle(players)) {
+		const iterationOrder = seedOrder && seedOrder.length ? seedOrder : Utils.shuffle(players);
+		for (const user of iterationOrder) {
 			if (!tree) {
 				tree = {
 					root: new ElimNode({ user }),

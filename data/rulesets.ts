@@ -2806,11 +2806,13 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
 		name: 'Best Of',
 		desc: "Allows players to define a best-of series where the winner of the series is the winner of the majority of games.",
 		hasValue: 'positive-integer',
-		onValidateRule(value) {
-			const num = Number(value);
-			if (num > 9 || num < 3 || num % 2 !== 1) {
-				throw new Error("Series length must be an odd number between three and nine (inclusive).");
-			}
+			onValidateRule(value) {
+				const num = Number(value);
+				// Allow longer series for research tournaments (e.g., Bo51, Bo101).
+				// Keep oddness constraint; cap at 101 to avoid accidental huge series.
+				if (num > 101 || num < 3 || num % 2 !== 1) {
+					throw new Error("Series length must be an odd number between three and one hundred one (inclusive).");
+				}
 			if (!['singles', 'doubles'].includes(this.format.gameType)) {
 				throw new Error("Only single and doubles battles can be a Best-of series.");
 			}

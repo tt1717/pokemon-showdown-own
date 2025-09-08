@@ -193,10 +193,15 @@ export class BestOfGame extends RoomGame<BestOfPlayer> {
 		this.nextBattleTimer = null;
 	}
 	getOptions(): RoomBattleOptions | null {
-		const players = this.players.map(player => ({
-			...player.options,
-			user: player.getUser()!,
-		}));
+		const players = this.players.map(player => {
+			const user = player.getUser()!;
+			return {
+				...player.options,
+				user: user,
+				// Always use the player's current team setting, allowing team changes between games
+				team: user.battleSettings.team,
+			};
+		});
 		if (players.some(p => !p.user)) {
 			return null;
 		}
@@ -310,7 +315,10 @@ export class BestOfGame extends RoomGame<BestOfPlayer> {
 				buf += `<td> vs </td>`;
 				continue;
 			}
-			const team = Teams.unpack(this.players[i].options.team || "");
+			// Use current team setting instead of stored options to reflect team changes
+			const user = this.players[i].getUser();
+			const currentTeam = user?.battleSettings.team || this.players[i].options.team || "";
+			const team = Teams.unpack(currentTeam);
 			if (!team || !Dex.formats.getRuleTable(this.format).has('teampreview')) {
 				buf += `<td>`;
 				buf += `<psicon pokemon="unknown" /> `.repeat(3);

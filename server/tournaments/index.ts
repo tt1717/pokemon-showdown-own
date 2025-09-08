@@ -114,6 +114,9 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 	autoDisqualifyTimer: NodeJS.Timeout | null;
 	autoStartTimeout: number;
 	autoStartTimer: NodeJS.Timeout | null;
+	// Manual seeding and per-tournament allowlist
+	seedOrder: TournamentPlayer[] | null;
+	joinAllowlist: Set<ID> | null;
 
 	constructor(
 		room: ChatRoom, format: Format, generator: Generator,
@@ -159,6 +162,10 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 		this.autoDisqualifyTimer = null;
 		this.autoStartTimeout = Infinity;
 		this.autoStartTimer = null;
+
+		// initialize new features
+		this.seedOrder = null;
+		this.joinAllowlist = null;
 
 		room.add(`|tournament|create|${this.baseFormat}|${generator.name}|${this.playerCap}${this.name === this.baseFormat ? `` : `|${this.name}`}`);
 		const update: {
@@ -422,6 +429,13 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 			return;
 		}
 
+		// Enforce per-tournament allowlist if enabled
+		if (this.joinAllowlist && !this.joinAllowlist.has(user.id)) {
+			output.sendReply('|tournament|error|NotAllowed');
+			user.popup(`You are not approved to join this tournament in ${this.room.title}.`);
+			return;
+		}
+
 		const gameCount = user.games.size;
 		if (gameCount > 4) {
 			throw new Chat.ErrorMessage("Due to high load, you are limited to 4 games at the same time.");
@@ -440,6 +454,13 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 
 		if (this.isTournamentStarted) {
 			output.sendReply(`|tournament|error|BracketFrozen`);
+			return;
+		}
+
+		// Enforce per-tournament allowlist if enabled
+		if (this.joinAllowlist && !this.joinAllowlist.has(user.id)) {
+			output.sendReply('|tournament|error|NotAllowed');
+			user.popup(`You are not approved to join this tournament in ${this.room.title}.`);
 			return;
 		}
 
@@ -568,7 +589,7 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 	getBracketData() {
 		let data: any;
 		if (!this.isTournamentStarted) {
-			data = this.generator.getPendingBracketData(this.players);
+			data = this.generator.getPendingBracketData(this.seedOrder || this.players);
 		} else {
 			data = this.generator.getBracketData();
 		}
@@ -649,7 +670,8 @@ export class Tournament extends Rooms.RoomGame<TournamentPlayer> {
 			return false;
 		}
 
-		this.generator.freezeBracket(this.players);
+		const orderedPlayers = this.seedOrder && this.seedOrder.length === this.players.length ? this.seedOrder : this.players;
+		this.generator.freezeBracket(orderedPlayers);
 
 		const now = Date.now();
 		for (const user of this.players) {
@@ -1345,6 +1367,128 @@ const commands: Chat.ChatCommands = {
 		help() {
 			return this.parse('/help tournament');
 		},
+		seed(target, room, user) {
+			room = this.requireRoom();
+			this.checkCan('tournaments', null, room);
+			const tournament = this.requireGame(Tournament);
+			if (tournament.isTournamentStarted) {
+				throw new Chat.ErrorMessage("The bracket cannot be seeded after the tournament has started.");
+			}
+			target = target.trim();
+			if (!target) {
+				return this.sendReply('Usage: /tour seed <comma-separated usernames>');
+			}
+			const names = target.split(',').map(s => s.trim()).filter(Boolean);
+			const ids = names.map(n => toID(n));
+			const seen = new Set<ID>();
+			for (const id of ids) {
+				if (!id) throw new Chat.ErrorMessage('All usernames must be valid.');
+				if (seen.has(id)) throw new Chat.ErrorMessage(`Duplicate entry in seeding list: ${id}`);
+				seen.add(id);
+			}
+			if (ids.length !== tournament.players.length) {
+				throw new Chat.ErrorMessage(`Seed list must include all ${tournament.players.length} current entrants.`);
+			}
+			const players: TournamentPlayer[] = [];
+			for (const id of ids) {
+				const player = tournament.playerTable[id];
+				if (!player) throw new Chat.ErrorMessage(`User ${id} is not currently entered in the tournament.`);
+				players.push(player);
+			}
+			tournament.seedOrder = players;
+			tournament.isBracketInvalidated = true;
+			tournament.update();
+			this.privateModAction(`${user.name} set a manual seeding order for the tournament.`);
+			this.modlog('TOUR SEED', null, names.join(', '));
+		},
+		clearseed: 'resetseed',
+		resetseed(target, room, user) {
+			room = this.requireRoom();
+			this.checkCan('tournaments', null, room);
+			const tournament = this.requireGame(Tournament);
+			if (tournament.isTournamentStarted) {
+				throw new Chat.ErrorMessage("The bracket cannot be reseeded after the tournament has started.");
+			}
+			tournament.seedOrder = null;
+			tournament.isBracketInvalidated = true;
+			tournament.update();
+			this.privateModAction(`${user.name} cleared the tournament seeding order.`);
+			this.modlog('TOUR CLEARSEED');
+		},
+		allowlist(target, room, user) {
+			room = this.requireRoom();
+			this.checkCan('tournaments', null, room);
+			const tournament = this.requireGame(Tournament);
+			// Accept both syntaxes:
+			//   /tour allowlist set, a, b
+			//   /tour allowlist set a, b
+			const raw = target.trim();
+			const subcmdWord = raw.split(/\s+/)[0] || '';
+			let restRaw = raw.slice(subcmdWord.length).trim();
+			if (restRaw.startsWith(',')) restRaw = restRaw.slice(1).trim();
+			const subcmd = toID(subcmdWord);
+			if (!subcmd || ['help'].includes(subcmd)) {
+				return this.sendReply(
+					`Usage: /tour allowlist <set|add|remove|clear|list> [, <comma-separated usernames>]`
+				);
+			}
+			switch (subcmd) {
+			case 'set': {
+				const names = restRaw.split(',').map(s => s.trim()).filter(Boolean);
+				if (!names.length) throw new Chat.ErrorMessage('Provide one or more usernames.');
+				const ids = names.map(n => toID(n));
+				const set = new Set<ID>();
+				for (const id of ids) {
+					if (!id) throw new Chat.ErrorMessage('Invalid username in list.');
+					set.add(id);
+				}
+				tournament.joinAllowlist = set;
+				this.privateModAction(`${user.name} set a tournament allowlist (${names.length} users).`);
+				this.modlog('TOUR ALLOWLIST', null, `set: ${names.join(', ')}`);
+				break;
+			}
+			case 'add': {
+				const names = restRaw.split(',').map(s => s.trim()).filter(Boolean);
+				if (!names.length) throw new Chat.ErrorMessage('Provide one or more usernames.');
+				if (!tournament.joinAllowlist) tournament.joinAllowlist = new Set<ID>();
+				for (const name of names) tournament.joinAllowlist.add(toID(name));
+				this.privateModAction(`${user.name} added to the tournament allowlist: ${names.join(', ')}`);
+				this.modlog('TOUR ALLOWLIST', null, `add: ${names.join(', ')}`);
+				break;
+			}
+			case 'remove': {
+				const names = restRaw.split(',').map(s => s.trim()).filter(Boolean);
+				if (!names.length) throw new Chat.ErrorMessage('Provide one or more usernames.');
+				if (!tournament.joinAllowlist) tournament.joinAllowlist = new Set<ID>();
+				for (const name of names) tournament.joinAllowlist.delete(toID(name));
+				this.privateModAction(`${user.name} removed from the tournament allowlist: ${names.join(', ')}`);
+				this.modlog('TOUR ALLOWLIST', null, `remove: ${names.join(', ')}`);
+				break;
+			}
+			case 'clear': {
+				tournament.joinAllowlist = null;
+				this.privateModAction(`${user.name} cleared the tournament allowlist.`);
+				this.modlog('TOUR ALLOWLIST', null, 'clear');
+				break;
+			}
+			case 'list': {
+				if (!this.runBroadcast()) return;
+				const list = tournament.joinAllowlist ? [...tournament.joinAllowlist] : [];
+				if (!list.length) return this.sendReplyBox('No allowlist is set for this tournament.');
+				this.sendReplyBox(`Allowed to join (${list.length}): ${list.join(', ')}`);
+				break;
+			}
+			case 'status': {
+				if (!this.runBroadcast()) return;
+				this.sendReplyBox(tournament.joinAllowlist ? 'Allowlist is ENABLED' : 'Allowlist is DISABLED');
+				break;
+			}
+			default:
+				return this.sendReply(
+					`Usage: /tour allowlist <set|add|remove|clear|list> [, <comma-separated usernames>]`
+				);
+			}
+		},
 		enable: 'toggle',
 		disable: 'toggle',
 		toggle(target, room, user, connection, cmd) {
@@ -1744,6 +1888,29 @@ const commands: Chat.ChatCommands = {
 			this.modlog('TOUR CLEARNAME');
 			tournament.update();
 		},
+ 		bestof(target, room, user) {
+ 			room = this.requireRoom();
+ 			this.checkCan('tournaments', null, room);
+ 			const tournament = this.requireGame(Tournament);
+ 			if (tournament.isTournamentStarted) {
+ 				throw new Chat.ErrorMessage("Best-of cannot be changed once the tournament has started.");
+ 			}
+ 			target = target.trim();
+ 			const n = Number(target);
+ 			if (!target || !Number.isInteger(n)) {
+ 				return this.sendReply('Usage: /tour bestof <odd number between 3 and 101>');
+ 			}
+ 			if (n < 3 || n > 101 || n % 2 !== 1) {
+ 				throw new Chat.ErrorMessage('Best-of must be an odd number between 3 and 101.');
+ 			}
+ 			// rebuild custom rules with updated bestof value
+ 			const otherRules = (tournament.customRules || []).filter(r => !toID(r).startsWith('bestof'));
+ 			const newRules = otherRules.concat([`bestof = ${n}`]);
+ 			if (tournament.setCustomRules(newRules.join(', '))) {
+ 				this.privateModAction(`${user.name} set this tournament to Best-of-${n}.`);
+ 				this.modlog('TOUR BESTOF', null, `bestof=${n}`);
+ 			}
+ 		},
 		begin: 'start',
 		start(target, room, user) {
 			room = this.requireRoom();
@@ -2342,6 +2509,9 @@ const commands: Chat.ChatCommands = {
 			`- clearrules/clearbanlist: Clears the custom rules for the tournament before it has started.<br />` +
 			`- name &lt;name>: Sets a custom name for the tournament.<br />` +
 			`- clearname: Clears the custom name of the tournament.<br />` +
+			`- seed &lt;comma-separated usernames>: Sets a manual seeding order for the tournament (before start).<br />` +
+			`- clearseed/resetseed: Clears manual seeding.<br />` +
+			`- bestof &lt;odd number>: Sets Best-of series length (e.g., 3, 5, 7). Applies to all matches in this tournament.<br />` +
 			`- autostart/setautostart &lt;on|minutes|off>: Sets the automatic start timeout.<br />` +
 			`- dq/disqualify &lt;user>: Disqualifies a user.<br />` +
 			`- autodq/setautodq &lt;minutes|off>: Sets the automatic disqualification timeout.<br />` +
@@ -2355,6 +2525,8 @@ const commands: Chat.ChatCommands = {
 			`- announce/announcements &lt;on|off>: Enables/disables tournament announcements for the current room.<br />` +
 			`- banuser/unbanuser &lt;user>: Bans/unbans a user from joining tournaments in this room. Lasts 2 weeks.<br />` +
 			`- sub/replace &lt;olduser>, &lt;newuser>: Substitutes a new user for an old one<br />` +
+			`- allowlist &lt;set|add|remove|clear|list> [, &lt;comma-separated usernames>]: Restrict signup to an approved list for this tournament.<br />` +
+			`- allowlist status: Show whether the allowlist is enabled.<br />` +
 			`- settings: Do <code>/help tour settings</code> for more information<br />` +
 			`</details>` +
 			`<br />` +
