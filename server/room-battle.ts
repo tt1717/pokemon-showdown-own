@@ -41,8 +41,8 @@ const TICK_TIME = 5;
 const SECONDS = 1000;
 
 // Timer constants: In seconds, should be multiple of TICK_TIME
-const STARTING_TIME = 600;
-const MAX_TURN_TIME = 150;
+const STARTING_TIME = 150;
+const MAX_TURN_TIME = 150;  
 const STARTING_TIME_CHALLENGE = 300;
 const STARTING_GRACE_TIME = 60;
 const MAX_TURN_TIME_CHALLENGE = 300;
