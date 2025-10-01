@@ -357,28 +357,26 @@ class Ladder extends LadderStore {
 			}
 		}
 
-		if (Config.noipchecks) {
-			users[0].lastMatch = users[1].id;
-			users[1].lastMatch = users[0].id;
-			return true;
+		// users must have different IPs (unless noipchecks is enabled)
+		if (!Config.noipchecks) {
+			if (new Set(users.map(user => user.latestIp)).size !== users.length) return false;
 		}
 
-		// users must have different IPs
-		if (new Set(users.map(user => user.latestIp)).size !== users.length) return false;
+		// search must be within Elo range (unless noelocheks is enabled)
+		if (!Config.noelocheks) {
+			let searchRange = 100;
+			const times = matches.map(([search]) => search.time);
+			const elapsed = Date.now() - Math.min(...times);
+			if (formatid === `gen${Dex.gen}ou` || formatid === `gen${Dex.gen}randombattle`) {
+				searchRange = 50;
+			}
 
-		// search must be within range
-		let searchRange = 100;
-		const times = matches.map(([search]) => search.time);
-		const elapsed = Date.now() - Math.min(...times);
-		if (formatid === `gen${Dex.gen}ou` || formatid === `gen${Dex.gen}randombattle`) {
-			searchRange = 50;
+			searchRange += elapsed / 300; // +1 every .3 seconds
+			if (searchRange > 300) searchRange = 300 + (searchRange - 300) / 10; // +1 every 3 sec after 300
+			if (searchRange > 600) searchRange = 600;
+			const ratings = matches.map(([search]) => search.rating);
+			if (Math.max(...ratings) - Math.min(...ratings) > searchRange) return false;
 		}
-
-		searchRange += elapsed / 300; // +1 every .3 seconds
-		if (searchRange > 300) searchRange = 300 + (searchRange - 300) / 10; // +1 every 3 sec after 300
-		if (searchRange > 600) searchRange = 600;
-		const ratings = matches.map(([search]) => search.rating);
-		if (Math.max(...ratings) - Math.min(...ratings) > searchRange) return false;
 
 		matches[0][1].lastMatch = matches[1][1].id;
 		matches[1][1].lastMatch = matches[0][1].id;

@@ -290,6 +290,13 @@ exports.allowrepeatmatchups = false;
 exports.repeatmatchuptimeout = 0;
 
 /**
+ * Skips Elo rating range checks in matchmaking.
+ * When true, players can be matched regardless of rating difference.
+ * Useful for AI tournaments where rating balance isn't important.
+ */
+exports.noelocheks = false;
+
+/**
  * controls the behavior of the /battlesearch command
  *
  * valid values are:
