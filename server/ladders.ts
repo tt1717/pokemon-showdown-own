@@ -337,6 +337,26 @@ class Ladder extends LadderStore {
 		// users must be different
 		if (new Set(users).size !== users.length) return false;
 
+		// users must not have been matched immediately previously (unless explicitly allowed)
+		if (!Config.allowrepeatmatchups) {
+			for (const user of users) {
+				if (userids.includes(user.lastMatch)) {
+					// Check if enough time has passed to allow repeat matchup
+					if (Config.repeatmatchuptimeout > 0) {
+						const times = matches.map(([search]) => search.time);
+						const minWaitTime = Math.min(...times);
+						const elapsed = (Date.now() - minWaitTime) / 1000; // Convert to seconds
+						if (elapsed < Config.repeatmatchuptimeout) {
+							return false; // Still within timeout period
+						}
+						// Timeout expired, allow the repeat matchup
+					} else {
+						return false; // No timeout configured, block repeat matchups
+					}
+				}
+			}
+		}
+
 		if (Config.noipchecks) {
 			users[0].lastMatch = users[1].id;
 			users[1].lastMatch = users[0].id;
@@ -345,11 +365,6 @@ class Ladder extends LadderStore {
 
 		// users must have different IPs
 		if (new Set(users.map(user => user.latestIp)).size !== users.length) return false;
-
-		// users must not have been matched immediately previously
-		for (const user of users) {
-			if (userids.includes(user.lastMatch)) return false;
-		}
 
 		// search must be within range
 		let searchRange = 100;

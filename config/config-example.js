@@ -275,6 +275,21 @@ exports.nothrottle = false;
 exports.noipchecks = false;
 
 /**
+ * Allows repeat matchups between the same players.
+ * When true, players can battle each other back-to-back.
+ * Useful for AI tournaments and development testing.
+ */
+exports.allowrepeatmatchups = false;
+
+/**
+ * Time in seconds after which repeat matchups are allowed.
+ * If 0, repeat matchups are never allowed (unless allowrepeatmatchups is true).
+ * If > 0, players can rematch after waiting this long in queue.
+ * Recommended: 300 (5 minutes) for small player pools.
+ */
+exports.repeatmatchuptimeout = 0;
+
+/**
  * controls the behavior of the /battlesearch command
  *
  * valid values are:
