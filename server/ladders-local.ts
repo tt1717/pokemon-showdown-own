@@ -414,22 +414,22 @@ export class LadderStore {
 	 */
 	calculateElo(oldElo: number, score: number, foeElo: number, games: number = 0): number {
 		// Improved K-factor calculation for reduced variance
-		let K = 32; // Base K-factor (reduced from 50)
+		let K = 40; // Base K-factor (slightly increased from 32)
 
 		// Progressive K-factor reduction based on games played
 		if (games < 20) {
-			K = 32; // New players get higher K for faster convergence
+			K = 40; // New players get higher K for faster convergence
 		} else if (games < 50) {
-			K = 24; // Intermediate players
+			K = 30; // Intermediate players (increased from 24)
 		} else {
-			K = 16; // Experienced players get lower K for stability
+			K = 20; // Experienced players get lower K for stability (increased from 16)
 		}
 
 		// Slight adjustment for rating ranges (less aggressive than before)
 		if (oldElo < 1100) {
-			K = Math.min(K + 8, 32); // Boost for very low ratings
+			K = Math.min(K + 10, 40); // Boost for very low ratings (increased from +8)
 		} else if (oldElo > 1600) {
-			K = Math.max(K - 4, 12); // Reduce for very high ratings
+			K = Math.max(K - 5, 15); // Reduce for very high ratings (adjusted from -4, 12)
 		}
 
 		// Anti-inflation: slightly favor the lower-rated player

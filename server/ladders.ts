@@ -364,16 +364,15 @@ class Ladder extends LadderStore {
 
 		// search must be within Elo range (unless noelocheks is enabled)
 		if (!Config.noelocheks) {
-			let searchRange = 100;
+			let searchRange = 150; // Start wider for all formats
 			const times = matches.map(([search]) => search.time);
 			const elapsed = Date.now() - Math.min(...times);
-			if (formatid === `gen${Dex.gen}ou` || formatid === `gen${Dex.gen}randombattle`) {
-				searchRange = 50;
-			}
 
-			searchRange += elapsed / 300; // +1 every .3 seconds
-			if (searchRange > 300) searchRange = 300 + (searchRange - 300) / 10; // +1 every 3 sec after 300
-			if (searchRange > 600) searchRange = 600;
+			// Faster expansion: +1 every 0.1 seconds initially, then accelerating
+			searchRange += elapsed / 100; // +1 every 0.1 seconds (3x faster)
+			if (searchRange > 200) searchRange = 200 + (elapsed - 20000) / 50; // +1 every 0.05 sec after 200
+			if (searchRange > 500) searchRange = 500 + (elapsed - 35000) / 25; // +1 every 0.025 sec after 500
+			if (searchRange > 1000) searchRange = 1000; // Cap at 1000
 			const ratings = matches.map(([search]) => search.rating);
 			if (Math.max(...ratings) - Math.min(...ratings) > searchRange) return false;
 		}
