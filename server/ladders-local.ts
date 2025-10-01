@@ -67,12 +67,19 @@ export class LadderStore {
 				if (!line) continue;
 				const row = line.split('\t');
 				// Handle both old and new format
-				if (row.length >= 9) {
-					// New format with Glicko-1 and additional stats
+				if (row.length >= 11) {
+					// New format with Glicko-1, additional stats, and H2H data
 					ladder.push([
 						toID(row[1]), Number(row[0]), row[1], Number(row[2]), Number(row[3]), Number(row[4]),
 						Number(row[5]) || 130, Number(row[6]) || 50, Number(row[7]) || (Number(row[2]) + Number(row[3]) + Number(row[4])),
-						row[8], row[9] || '{}'
+						Number(row[8]), row[9], row[10] || '{}'
+					]);
+				} else if (row.length >= 9) {
+					// Format without H2H data - initialize empty H2H
+					ladder.push([
+						toID(row[1]), Number(row[0]), row[1], Number(row[2]), Number(row[3]), Number(row[4]),
+						Number(row[5]) || 130, Number(row[6]) || 50, Number(row[7]) || (Number(row[2]) + Number(row[3]) + Number(row[4])),
+						Number(row[8]), row[9] || new Date().toString(), '{}'
 					]);
 				} else {
 					// Old format - calculate missing values
@@ -82,7 +89,7 @@ export class LadderStore {
 					const gxe = this.calculateGXE(Number(row[0]), rd);
 					ladder.push([
 						toID(row[1]), Number(row[0]), row[1], Number(row[2]), Number(row[3]), Number(row[4]),
-						rd, gxe, games, row[5], '{}'
+						rd, rd, gxe, games, row[5] || new Date().toString(), '{}'
 					]);
 				}
 			}
