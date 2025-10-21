@@ -17,6 +17,7 @@ const PERIODIC_MATCH_INTERVAL = 60 * SECONDS;
 
 import type { ChallengeType } from './room-battle';
 import { BattleReady, BattleChallenge, GameChallenge, BattleInvite, challenges } from './ladders-challenges';
+import { Bracket } from './bracket-manager';
 
 /**
  * Keys are formatids
@@ -317,8 +318,29 @@ class Ladder extends LadderStore {
 			return;
 		}
 
+		// Bracket mode: Block searches from players not in active matches
+		if (Config.bracketmode && Bracket.isInitialized()) {
+			const opponent = Bracket.getOpponent(user.id);
+			if (!opponent) {
+				connection.popup(
+					`You are not currently in an active bracket match. ` +
+					`Check /bracketstatus or contact an admin.`
+				);
+				return;
+			}
+			// Allow search to proceed - matchmakingOK will ensure correct pairing
+		}
+
 		const oldUserid = user.id;
-		const search = await this.prepBattle(connection, format.rated ? 'rated' : 'unrated', null, format.rated !== false);
+		
+		// Determine if battle should be rated
+		// In bracket mode, use the bracket's rated setting; otherwise use format default
+		let isRated = format.rated !== false;
+		if (Config.bracketmode && Bracket.isInitialized()) {
+			isRated = Config.brackettournament?.rated || false;
+		}
+		
+		const search = await this.prepBattle(connection, isRated ? 'rated' : 'unrated', null, isRated);
 
 		if (oldUserid !== user.id) return;
 		if (!search) return;
@@ -333,6 +355,28 @@ class Ladder extends LadderStore {
 		const formatid = toID(this.formatid);
 		const users = matches.map(([ready, user]) => user);
 		const userids = users.map(user => user.id);
+
+		// Bracket mode: Only allow matches between bracket opponents
+		if (Config.bracketmode && Bracket.isInitialized()) {
+			if (users.length !== 2) return false; // Bracket only supports 1v1
+			
+			const [user1, user2] = userids;
+			const opponent1 = Bracket.getOpponent(user1);
+			const opponent2 = Bracket.getOpponent(user2);
+			
+			// Both users must have active matches and must be each other's opponents
+			if (!opponent1 || !opponent2) {
+				Monitor.log(`[BRACKET] Matchmaking blocked: ${user1} or ${user2} not in active match`);
+				return false;
+			}
+			if (opponent1 !== user2 || opponent2 !== user1) {
+				Monitor.log(`[BRACKET] Matchmaking blocked: ${user1} vs ${user2} (expected: ${user1} vs ${opponent1})`);
+				return false;
+			}
+			
+			// Valid bracket match - allow it through
+			Monitor.log(`[BRACKET] ✓ Valid bracket match: ${user1} vs ${user2}`);
+		}
 
 		// users must be different
 		if (new Set(users).size !== users.length) return false;

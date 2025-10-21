@@ -796,3 +796,48 @@ exports.motd = `🤖 **PokéAgent Challenge - NeurIPS 2025** 🏆\n\nWelcome to 
  * Server description for the server list
  */
 exports.serverdesc = 'Official server for the NeurIPS 2025 PokéAgent Challenge - AI Pokemon competition';
+
+/**
+ * Bracket Tournament Mode
+ * Enable with --bracket-mode flag
+ * Creates a single-elimination tournament where ladder searches only match bracket opponents
+ */
+exports.bracketmode = false;
+
+/**
+ * Bracket Tournament Configuration
+ */
+exports.brackettournament = {
+	/** Battle format for the tournament */
+	format: 'gen1ou',
+	
+	/** Number of participants (must be power of 2: 2, 4, 8, 16, 32, etc.) */
+	participants: 8,
+	
+	/** Best of N games (e.g., 99 = first to 50 wins) */
+	bestOf: 99,
+	
+	/** List of participant usernames (must match participants count) */
+	playerList: [
+		'PAC-Bot1',
+		'PAC-Bot2',
+		'PAC-Bot3',
+		'PAC-Bot4',
+		'PAC-Bot5',
+		'PAC-Bot6',
+		'PAC-Bot7',
+		'PAC-Bot8',
+	],
+	
+	/** Whether to randomize seeding (true) or use order from playerList (false) */
+	randomizeSeeding: false,
+	
+	/** Timeout in seconds for a player to connect after bracket starts (0 = no timeout) */
+	noShowTimeout: 600, // 10 minutes
+	
+	/** Whether bracket battles count toward ladder rating */
+	rated: false,
+	
+	/** Auto-initialize bracket on server start (true) or wait for /createbracket command (false) */
+	autoInit: false,  // Set to true for automated tournaments
+};

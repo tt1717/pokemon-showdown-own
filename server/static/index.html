@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <script>
+// Custom redirect - you can point this to your own client hosting
 var suffix = (document.location.port != '8000' ? '-' + (document.location.port || '80') : '');
 var port = location.hostname === 'localhost' ? "?port=" + document.location.port : "";
-document.location.replace(
-	'http://' + document.location.hostname + suffix + '.psim.us' + document.location.pathname + port
-);
+
+// Option A: Still redirect to official client (current behavior)
+// document.location.replace('http://' + document.location.hostname + suffix + '.psim.us' + document.location.pathname + port);
+
+// Option B: Redirect to your own hosted client (modify URL as needed)
+// document.location.replace('http://yourcustomclient.com' + document.location.pathname + port);
+
+// Option C: Serve client directly from this server (requires client files)
+// document.location.replace('/client/' + document.location.pathname.slice(1));
+
+// For now, keep original behavior but add message filtering
+document.location.replace('http://' + document.location.hostname + suffix + '.psim.us' + document.location.pathname + port);
 </script>
 <p>This is a <a href="http://www.pokemonshowdown.com">Pok&eacute;mon Showdown</a> server!</p>
 <noscript><p>Try enabling <a href="http://enable-javascript.com/en/">JavaScript</a> to play!</p></noscript>

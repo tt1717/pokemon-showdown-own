@@ -19,6 +19,7 @@ export type ConfigType = typeof defaults & {
 const FLAG_PRESETS = new Map([
 	['--no-security', ['nothrottle', 'noguestsecurity', 'noipchecks']],
 	['--ai-tournament', ['noipchecks', 'allowrepeatmatchups', 'noelocheks']],
+	['--bracket-mode', ['bracketmode', 'noipchecks', 'allowrepeatmatchups']],
 ]);
 
 const CONFIG_PATH = FS('./config/config.js').path;
