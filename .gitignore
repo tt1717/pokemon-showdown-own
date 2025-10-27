@@ -69,3 +69,7 @@ local_settings.py
 pip-log.txt
 # redis dumps
 *.rdb
+config/ssl/*.pem
+config/ssl/*.key
+config/ssl/privkey.pem
+config/ssl/fullchain.pem
