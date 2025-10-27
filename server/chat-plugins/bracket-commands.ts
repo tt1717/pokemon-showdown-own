@@ -25,14 +25,12 @@ export const commands: Chat.ChatCommands = {
 			`<strong>Commands You Can Use:</strong><br />` +
 			`<code>/bracketstatus</code> - See the full tournament bracket with scores<br />` +
 			`<code>/bracketmatch [player1], [player2]</code> - Check if two players should match<br />` +
-			`<code>/brackethelp</code> - Show this help message<br /><br />` +
-			
-			`<strong>For Admins:</strong><br />` +
-			`Type <code>/bracketadminhelp</code> to see tournament management commands`
+			`<code>/brackethelp</code> - Show this help message`
 		);
 	},
 
 	bracketadminhelp(target, room, user) {
+		this.checkCan('bypassall'); // Admin only
 		if (!this.runBroadcast()) return;
 		this.sendReplyBox(
 			`<strong>🛡️ Bracket Tournament - Admin Guide</strong><br /><br />` +
@@ -77,10 +75,11 @@ export const commands: Chat.ChatCommands = {
 			
 			`<strong>/bracketfreeze</strong><br />` +
 			`⏸️ Pauses tournament progression<br />` +
-			`• Current round matches can continue and finish<br />` +
+			`• Only the <strong>earliest incomplete round</strong> can continue playing<br />` +
+			`• Later rounds are blocked from starting new battles<br />` +
 			`• Winners will NOT advance to next round until resumed<br />` +
 			`• Use this to control pacing between rounds<br />` +
-			`• Example: Let Round 1 finish, then analyze before starting Round 2<br /><br />` +
+			`• Example: Freeze during Round 1, so Round 2 can't start until you /bracketresume<br /><br />` +
 			
 			`<strong>/bracketresume</strong><br />` +
 			`▶️ Resumes tournament progression after freeze<br />` +
@@ -412,14 +411,14 @@ export const commands: Chat.ChatCommands = {
 		void Bracket.freeze().then(() => {
 			this.addModAction(`${user.name} froze the bracket tournament`);
 			this.modlog('BRACKET FREEZE');
-			this.sendReply('⏸️ Tournament FROZEN. Current round can finish, but winners will not advance until /bracketresume');
+			this.sendReply('⏸️ Tournament FROZEN. Only the earliest incomplete round can play. Winners will not advance until /bracketresume');
 			this.parse('/bracketstatus');
 		}).catch((err: Error) => {
 			this.errorReply(`Failed to freeze bracket: ${err.message}`);
 		});
 	},
 	bracketfreezehelp: [
-		`/bracketfreeze - Freeze tournament progression. Current round can finish but no advancement. Requires: ~`,
+		`/bracketfreeze - Freeze tournament progression. Only earliest incomplete round can play, no advancement. Requires: ~`,
 	],
 
 	bracketresume(target, room, user) {

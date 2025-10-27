@@ -4,7 +4,6 @@
  */
 
 import {toID} from '../sim/dex';
-import type {ID} from '../sim/dex-data';
 import {FS} from '../lib/fs';
 
 interface BracketMatch {
@@ -12,10 +11,15 @@ interface BracketMatch {
 	matchId: number;
 	player1: ID;
 	player2: ID;
+	/** Display names with original formatting */
+	player1Display: string;
+	player2Display: string;
 	p1wins: number;
 	p2wins: number;
 	status: 'pending' | 'waiting' | 'active' | 'complete';
 	winner: ID | null;
+	/** Winner's display name */
+	winnerDisplay: string | null;
 	/** Timestamp when match became active */
 	startTime?: number;
 }
@@ -28,6 +32,8 @@ interface BracketState {
 	matches: BracketMatch[];
 	/** Map of userid -> current match */
 	playerMatches: Map<ID, BracketMatch>;
+	/** Map of userid -> display name (preserves original capitalization/formatting) */
+	displayNames: Map<ID, string>;
 	initialized: boolean;
 	/** If true, prevents advancement to next round */
 	frozen: boolean;
@@ -50,6 +56,7 @@ export class BracketManager {
 			currentRound: 0,
 			matches: [],
 			playerMatches: new Map(),
+			displayNames: new Map(),
 			initialized: false,
 			frozen: false,
 		};
@@ -79,6 +86,12 @@ export class BracketManager {
 		this.state.currentRound = 1;
 		this.state.matches = [];
 		this.state.playerMatches.clear();
+		this.state.displayNames.clear();
+
+		// Store display names for all players
+		for (const player of seededPlayers) {
+			this.state.displayNames.set(toID(player), player);
+		}
 
 		// Generate first round matches with standard tournament seeding
 		// Standard seeding pairs: (1,N), (N/2,N/2+1), (2,N-1), (N/2-1,N/2+2), etc.
@@ -89,15 +102,20 @@ export class BracketManager {
 		
 		for (let i = 0; i < numMatches; i++) {
 			const [seed1, seed2] = standardPairings[i];
+			const p1Name = seededPlayers[seed1 - 1];
+			const p2Name = seededPlayers[seed2 - 1];
 			const match: BracketMatch = {
 				round: 1,
 				matchId: i + 1,
-				player1: toID(seededPlayers[seed1 - 1]), // Convert 1-based seed to 0-based index
-				player2: toID(seededPlayers[seed2 - 1]),
+				player1: toID(p1Name), // Convert 1-based seed to 0-based index
+				player2: toID(p2Name),
+				player1Display: p1Name,
+				player2Display: p2Name,
 				p1wins: 0,
 				p2wins: 0,
 				status: 'active',
 				winner: null,
+				winnerDisplay: null,
 			};
 			this.state.matches.push(match);
 			this.state.playerMatches.set(match.player1, match);
@@ -115,10 +133,13 @@ export class BracketManager {
 					matchId: nextMatchId++,
 					player1: '' as ID,
 					player2: '' as ID,
+					player1Display: '',
+					player2Display: '',
 					p1wins: 0,
 					p2wins: 0,
 					status: 'pending',
 					winner: null,
+					winnerDisplay: null,
 				};
 				this.state.matches.push(match);
 			}
@@ -132,7 +153,7 @@ export class BracketManager {
 		Monitor.log(`[BRACKET] Initialized ${numPlayers}-player bracket for ${format}`);
 		Monitor.log(`[BRACKET] Best of ${bestOf} (first to ${Math.floor(bestOf / 2) + 1} wins)`);
 		Monitor.log(`[BRACKET] Round 1 matches: ${this.state.matches.slice(0, numMatches).map(m => 
-			`${m.player1} vs ${m.player2}`
+			`${m.player1Display} vs ${m.player2Display}`
 		).join(', ')}`);
 	}
 
@@ -177,23 +198,45 @@ export class BracketManager {
 			// Parse matches
 			this.state.matches = [];
 			this.state.playerMatches.clear();
+			this.state.displayNames.clear();
 
 			for (const line of matchLines) {
-				const [round, matchId, player1, player2, p1wins, p2wins, status, winner] = 
-					line.split(',').map(s => s.trim());
+				const parts = line.split(',').map(s => s.trim());
+				
+				// Handle both old format (8 fields) and new format (11 fields)
+				let round, matchId, player1, player2, player1Display, player2Display, p1wins, p2wins, status, winner, winnerDisplay;
+				
+				if (parts.length >= 11) {
+					// New format with display names
+					[round, matchId, player1, player2, player1Display, player2Display, p1wins, p2wins, status, winner, winnerDisplay] = parts;
+				} else {
+					// Old format - use player IDs as display names
+					[round, matchId, player1, player2, p1wins, p2wins, status, winner] = parts;
+					player1Display = player1;
+					player2Display = player2;
+					winnerDisplay = winner;
+				}
 
 				const match: BracketMatch = {
 					round: parseInt(round),
 					matchId: parseInt(matchId),
 					player1: toID(player1),
 					player2: toID(player2),
+					player1Display: player1Display || '',
+					player2Display: player2Display || '',
 					p1wins: parseInt(p1wins) || 0,
 					p2wins: parseInt(p2wins) || 0,
 					status: (status || 'pending') as BracketMatch['status'],
 					winner: winner ? toID(winner) : null,
+					winnerDisplay: winnerDisplay || null,
 				};
 
 				this.state.matches.push(match);
+
+				// Store display names
+				if (match.player1Display) this.state.displayNames.set(match.player1, match.player1Display);
+				if (match.player2Display) this.state.displayNames.set(match.player2, match.player2Display);
+				if (match.winnerDisplay && match.winner) this.state.displayNames.set(match.winner, match.winnerDisplay);
 
 				// Build player lookup map for active players
 				if (match.status === 'active' || match.status === 'waiting') {
@@ -202,8 +245,12 @@ export class BracketManager {
 				}
 			}
 
-			// Determine current round
-			this.state.currentRound = Math.max(...this.state.matches.map(m => m.round));
+			// Determine current round (highest round with any activity, not just pending placeholders)
+			const activeRounds = this.state.matches
+				.filter(m => m.status === 'active' || m.status === 'waiting' || m.status === 'complete')
+				.map(m => m.round);
+			
+			this.state.currentRound = activeRounds.length > 0 ? Math.max(...activeRounds) : 1;
 			
 			// If participants wasn't in metadata, calculate from matches
 			if (!this.state.participants) {
@@ -232,9 +279,9 @@ export class BracketManager {
 				
 				// Build CSV content with metadata header
 				const metadata = `# format=${this.state.format},bestOf=${this.state.bestOf},participants=${this.state.participants},frozen=${this.state.frozen}\n`;
-				const header = 'round,matchId,player1,player2,p1wins,p2wins,status,winner\n';
+				const header = 'round,matchId,player1,player2,player1Display,player2Display,p1wins,p2wins,status,winner,winnerDisplay\n';
 				const rows = this.state.matches.map(m => 
-					`${m.round},${m.matchId},${m.player1},${m.player2},${m.p1wins},${m.p2wins},${m.status},${m.winner || ''}`
+					`${m.round},${m.matchId},${m.player1},${m.player2},${m.player1Display},${m.player2Display},${m.p1wins},${m.p2wins},${m.status},${m.winner || ''},${m.winnerDisplay || ''}`
 				).join('\n');
 				
 				const content = metadata + header + rows;
@@ -263,6 +310,14 @@ export class BracketManager {
 		if (!match) return false;
 		if (match.status !== 'active') return false;
 
+		// If bracket is frozen, only allow matches in the earliest incomplete round
+		if (this.state.frozen) {
+			const earliestIncompleteRound = this.getEarliestIncompleteRound();
+			if (match.round !== earliestIncompleteRound) {
+				return false;
+			}
+		}
+
 		// Check if userid2 is the assigned opponent
 		return (match.player1 === userid1 && match.player2 === userid2) ||
 		       (match.player2 === userid1 && match.player1 === userid2);
@@ -280,7 +335,19 @@ export class BracketManager {
 			return false;
 		}
 
-		return match.status === 'active' || match.status === 'waiting';
+		if (match.status !== 'active' && match.status !== 'waiting') {
+			return false;
+		}
+
+		// If bracket is frozen, only allow matches in the earliest incomplete round
+		if (this.state.frozen) {
+			const earliestIncompleteRound = this.getEarliestIncompleteRound();
+			if (match.round !== earliestIncompleteRound) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -314,13 +381,14 @@ export class BracketManager {
 		// Note: Ties don't count - match continues until someone reaches winsNeeded
 		if (match.p1wins >= winsNeeded || match.p2wins >= winsNeeded) {
 			match.winner = match.p1wins >= winsNeeded ? match.player1 : match.player2;
+			match.winnerDisplay = match.p1wins >= winsNeeded ? match.player1Display : match.player2Display;
 			match.status = 'complete';
 			
 			// Remove from active player map
 			this.state.playerMatches.delete(match.player1);
 			this.state.playerMatches.delete(match.player2);
 
-			Monitor.log(`[BRACKET] Match ${match.matchId} complete: ${match.winner} wins ${match.p1wins}-${match.p2wins}`);
+			Monitor.log(`[BRACKET] Match ${match.matchId} complete: ${match.winnerDisplay} wins ${match.p1wins}-${match.p2wins}`);
 
 			// Advance winner to next round
 			await this.advanceWinner(match);
@@ -373,13 +441,16 @@ export class BracketManager {
 			return;
 		}
 
-		Monitor.log(`[BRACKET] Advancing ${winner} from match ${completedMatch.matchId} to match ${nextMatch.matchId}`);
+		const winnerDisplay = this.state.displayNames.get(winner) || winner;
+		Monitor.log(`[BRACKET] Advancing ${winnerDisplay} from match ${completedMatch.matchId} to match ${nextMatch.matchId}`);
 
 		// Assign winner to next match
 		if (!nextMatch.player1) {
 			nextMatch.player1 = winner;
+			nextMatch.player1Display = winnerDisplay;
 		} else if (!nextMatch.player2) {
 			nextMatch.player2 = winner;
+			nextMatch.player2Display = winnerDisplay;
 		} else {
 			Monitor.error(`[BRACKET] Next match ${nextMatch.matchId} already has both players!`);
 			return;
@@ -396,10 +467,10 @@ export class BracketManager {
 				this.state.currentRound = nextRound;
 			}
 			
-			Monitor.log(`[BRACKET] Round ${nextRound} match ${nextMatch.matchId} ready: ${nextMatch.player1} vs ${nextMatch.player2}`);
+			Monitor.log(`[BRACKET] Round ${nextRound} match ${nextMatch.matchId} ready: ${nextMatch.player1Display} vs ${nextMatch.player2Display}`);
 		} else {
 			nextMatch.status = 'waiting';
-			Monitor.log(`[BRACKET] ${winner} advances to Round ${nextRound}, waiting for opponent`);
+			Monitor.log(`[BRACKET] ${winnerDisplay} advances to Round ${nextRound}, waiting for opponent`);
 		}
 	}
 
@@ -414,18 +485,34 @@ export class BracketManager {
 		const lines = [`Bracket Tournament - ${this.state.format}`];
 		lines.push(`Best of ${this.state.bestOf} (first to ${Math.floor(this.state.bestOf / 2) + 1} wins)`);
 		if (this.state.frozen) {
-			lines.push(`⏸️ TOURNAMENT FROZEN - Current round can finish, advancement blocked`);
+			const earliestRound = this.getEarliestIncompleteRound();
+			lines.push(`⏸️ TOURNAMENT FROZEN - Only Round ${earliestRound} can play, advancement blocked`);
 		}
 		lines.push('');
 
-		for (let round = 1; round <= this.state.currentRound; round++) {
+		// Show all rounds, including future rounds with partial data
+		const maxRound = this.state.matches.length > 0 ? Math.max(...this.state.matches.map(m => m.round)) : 1;
+		for (let round = 1; round <= maxRound; round++) {
 			const roundMatches = this.state.matches.filter(m => m.round === round);
+			if (roundMatches.length === 0) continue;
+			
 			lines.push(`Round ${round}:`);
 			for (const match of roundMatches) {
-				const status = match.status === 'complete' ? `✓ ${match.winner} wins` :
-				               match.status === 'active' ? `${match.p1wins}-${match.p2wins}` :
-				               match.status === 'waiting' ? 'Waiting...' : 'TBD';
-				lines.push(`  Match ${match.matchId}: ${match.player1 || 'TBD'} vs ${match.player2 || 'TBD'} [${status}]`);
+				let status: string;
+				if (match.status === 'complete') {
+					// Show winner's score first, then loser's score
+					const winnerWins = match.winner === match.player1 ? match.p1wins : match.p2wins;
+					const loserWins = match.winner === match.player1 ? match.p2wins : match.p1wins;
+					status = `✓ ${match.winnerDisplay} wins ${winnerWins}-${loserWins}`;
+				} else if (match.status === 'active') {
+					// Show current score
+					status = `${match.p1wins}-${match.p2wins}`;
+				} else if (match.status === 'waiting') {
+					status = 'Waiting...';
+				} else {
+					status = 'TBD';
+				}
+				lines.push(`  Match ${match.matchId}: ${match.player1Display || 'TBD'} vs ${match.player2Display || 'TBD'} [${status}]`);
 			}
 			lines.push('');
 		}
@@ -544,6 +631,7 @@ export class BracketManager {
 			currentRound: 0,
 			matches: [],
 			playerMatches: new Map(),
+			displayNames: new Map(),
 			initialized: false,
 			frozen: false,
 		};
@@ -606,9 +694,12 @@ export class BracketManager {
 		
 		this.state.frozen = false;
 		
-		// Find all completed matches that haven't advanced yet
+		// Find the total number of rounds in the tournament
+		const maxRound = this.state.matches.length > 0 ? Math.max(...this.state.matches.map(m => m.round)) : 1;
+		
+		// Find all completed matches (excluding finals) that might need advancement
 		const completedMatches = this.state.matches.filter(m => 
-			m.status === 'complete' && m.winner && m.round < this.state.matches.filter(m2 => m2.status === 'active' || m2.status === 'waiting').length
+			m.status === 'complete' && m.winner && m.round < maxRound
 		);
 		
 		// Advance winners that were blocked
@@ -617,7 +708,7 @@ export class BracketManager {
 			const nextRound = match.round + 1;
 			const nextRoundMatches = this.state.matches.filter(m => m.round === nextRound);
 			
-			if (nextRoundMatches.length === 0) continue; // Finals already complete
+			if (nextRoundMatches.length === 0) continue; // No next round (shouldn't happen given filter above)
 			
 			// Get the next match for this winner
 			const currentRoundMatches = this.state.matches.filter(m => m.round === match.round);
@@ -634,7 +725,9 @@ export class BracketManager {
 			}
 			
 			// Advance this winner
-			Monitor.log(`[BRACKET] Resuming - advancing ${match.winner} from match ${match.matchId}`);
+			if (!match.winner) continue; // Safety check (should never happen)
+			const winnerDisplay = this.state.displayNames.get(match.winner) || match.winner;
+			Monitor.log(`[BRACKET] Resuming - advancing ${winnerDisplay} from match ${match.matchId}`);
 			await this.advanceWinner(match);
 		}
 		
@@ -647,6 +740,24 @@ export class BracketManager {
 	 */
 	isFrozen(): boolean {
 		return this.state.frozen;
+	}
+
+	/**
+	 * Get the earliest round that has incomplete matches
+	 * Used to restrict play when bracket is frozen
+	 */
+	private getEarliestIncompleteRound(): number {
+		// Find all rounds with incomplete matches (active or waiting)
+		const incompleteRounds = this.state.matches
+			.filter(m => m.status === 'active' || m.status === 'waiting')
+			.map(m => m.round);
+		
+		if (incompleteRounds.length === 0) {
+			// No incomplete matches, return current round
+			return this.state.currentRound;
+		}
+		
+		return Math.min(...incompleteRounds);
 	}
 }
 
