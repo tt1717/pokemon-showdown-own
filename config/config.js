@@ -30,7 +30,7 @@ exports.bindaddress = '0.0.0.0';
  *   this means or you are unfamiliar with PS' networking code, leave this set
  *   to 1.
  */
-exports.workers = 1;
+exports.workers = 2;
 
 /**
  * wsdeflate - compresses WebSocket messages
@@ -61,7 +61,13 @@ exports.wsdeflate = {
  *  something.
  * @type {{port: number, options: {key: string, cert: string}} | null}
  */
-exports.ssl = null;
+exports.ssl = {
+	                port: 443,
+	                options: {
+		                                        key: '/home/grigsbyutcs/pokemon-showdown/config/ssl/privkey.pem',
+		                                        cert: '/home/grigsbyutcs/pokemon-showdown/config/ssl/fullchain.pem',
+		                                },
+};
 
 /*
 // example:
@@ -220,7 +226,7 @@ exports.disablebasicnamefilter = false;
 /**
  * allowrequestingties - enables the use of `/offerdraw` and `/acceptdraw`
  */
-exports.allowrequestingties = true;
+exports.allowrequestingties = false;
 
 /**
  * report joins and leaves - shows messages like "<USERNAME> joined"
@@ -247,14 +253,14 @@ exports.reportjoinsperiod = 30000; // Report joins every 30 seconds instead
  *   getting more than 160 or so users.
  *  @type {boolean | string[] | string}
  */
-exports.reportbattles = true; // Show battle announcements
+exports.reportbattles = false; // Show battle announcements
 
 /**
  * report joins and leaves in battle - shows messages like "<USERNAME> joined" in battle
  *   Set this to false on large tournament servers where battles get a lot of joins and leaves.
  *   Note that the feature of turning this off is deprecated.
  */
-exports.reportbattlejoins = true;
+exports.reportbattlejoins = false;
 
 /**
  * notify staff when users have a certain amount of room punishments.
@@ -271,32 +277,33 @@ exports.nothrottle = false; // Keep some throttling for stability
 
 /**
  * Removes all ip-based alt checking.
- * Note that in standard Showdown, `true` has a side-effect of *enabling*
- * repeat matchups between the same usernames.
  */
-exports.noipchecks = false;
+exports.noipchecks = true;
 
 /**
- * Allows repeat matchups between the same players.
- * When true, players can battle each other back-to-back.
- * Useful for AI tournaments and development testing.
+ *  * Allows repeat matchups between the same players.
+ *   * When true, players can battle each other back-to-back.
+ *    * Useful for AI tournaments and development testing.
+ *     
  */
 exports.allowrepeatmatchups = false;
 
 /**
- * Time in seconds after which repeat matchups are allowed.
- * If 0, repeat matchups are never allowed (unless allowrepeatmatchups is true).
- * If > 0, players can rematch after waiting this long in queue.
- * Recommended: 300 (5 minutes) for small player pools.
+ *  * Time in seconds after which repeat matchups are allowed.
+ *   * If 0, repeat matchups are never allowed (unless allowrepeatmatchups is true).
+ *    * If > 0, players can rematch after waiting this long in queue.
+ *     * Recommended: 300 (5 minutes) for small player pools.
  */
-exports.repeatmatchuptimeout = 30;
+exports.repeatmatchuptimeout = 90;
+
 
 /**
- * Skips Elo rating range checks in matchmaking.
- * When true, players can be matched regardless of rating difference.
- * Useful for AI tournaments where rating balance isn't important.
- */
+ *  * Skips Elo rating range checks in matchmaking.
+ *   * When true, players can be matched regardless of rating difference.
+ *    * Useful for AI tournaments where rating balance isn't important.
+ *     */
 exports.noelocheks = false;
+
 
 /**
  * controls the behavior of the /battlesearch command
@@ -357,7 +364,7 @@ exports.pmmodchat = false;
  * ladder modchat - minimum group for laddering
  * @type {false | GroupSymbol}
  */
-exports.laddermodchat = false;
+exports.laddermodchat = "whitelist";
 
 /**
  * forced timer - force the timer on for all battles
@@ -417,13 +424,13 @@ exports.logchat = false;
 /**
  * logchallenges - whether to log challenge battles. Useful for tournament servers.
  */
-exports.logchallenges = true; // Important for tracking AI battles
+exports.logchallenges = true;
 
 /**
  * loguserstats - how often (in milliseconds) to write user stats to the
  * lobby log. This has no effect if `logchat` is disabled.
  */
-exports.loguserstats = 1000 * 60 * 10; // 10 minutes
+exports.loguserstats = 1000 * 60 * 5; // 5 minutes
 
 /**
  * validatorprocesses - the number of processes to use for validating teams
