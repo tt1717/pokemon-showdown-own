@@ -1,0 +1,28 @@
+/**
+ * Custom CSS to hide the ladder development message
+ */
+
+/* Hide the specific ladder message */
+.ladder-message,
+.ladder .infobox,
+.mainmenu1 .menugroup:contains("btw if you couldn't tell") {
+    display: none !important;
+}
+
+/* Alternative: Hide any text containing the specific message */
+*:contains("btw if you couldn't tell the ladder screens aren't done yet") {
+    display: none !important;
+}
+
+/* More specific targeting if the message is in a particular container */
+.ps-room .ladder *:contains("they'll look nicer than this once I'm done") {
+    display: none !important;
+}
+
+/* If the message appears in a specific element, you can target it more precisely */
+.mainmenu1 p:contains("btw if you couldn't tell"),
+.ladder p:contains("btw if you couldn't tell") {
+    display: none !important;
+}
+
+

@@ -1,0 +1,73 @@
+Timestamp,Email Address,Contact Email,"Team Member Names
+
+(max team size is 10)",Team Member Discord Usernames,"Showdown Username
+
+1. Should begin with ""PAC""
+2. Should be safe-for-work
+3. Should not describe the technical details of your method. For example, ""PAC-MCTS-RL"" and ""PAC-GPT5-CoT"" would be bad names.
+4. Should not impersonate organizer baselines. Names should not begin with ""PAC-MM-"", ""PAC-BH-"", or ""PAC-PC-"". Do not include ""Metamon"" or ""Pokechamp"".",Please accept the terms and conditions of the PokéAgent Challenge rules.,"In order to receive bracket cash prizes, or to be eligible for Judges' Choice compute awards, you will need to provide the organizers with the following:
+1. Agent source code and setup instructions.
+2. A brief written description of your method (< 1 page). There is no need to include lengthy background sections on standard machine learning topics.
+3. A command to run the agent on a local Showdown ladder in a configuration that reasonably replicates your head-to-head results against the organizer baselines during the qualifying window. This serves as an anti-cheating measure.
+4. A command to run the agent on a local Showdown ladder that selects teams uniformly at random from a directory of team files. This will be used for a retrospective study of the contest and will not affect competition prizes.
+The organizers will not share your code.
+Code submissions will be collected through a separate form. The deadline is after the competition (Sunday, November 16, 2025).
+This submission is optional if you do not win cash prizes. ","Please describe your proposed method (gen, RL/LLM, etc.) <100 words."
+8/20/2025 23:11:17,joseph.twin14@gmail.com,joseph.twin14@gmail.com,Joseph Twin,spktrm,PAC-Porygon2AI,Accept,Acknowledge,
+8/27/2025 13:45:03,airilind568@gmail.com,rilind.sahitaj@tum.de,5,"rilsahi, naumal, simjk, xXG4M3RXx123, premsa_",PAC-Hypercursed,Accept,Acknowledge,
+8/30/2025 8:55:08,kevin2005ha@gmail.com,kevin2005ha@gmail.com,4,"leebokei, ddd.dong, 0x.yuan, user_howard",PAC-VibePoking,Accept,Acknowledge,
+8/31/2025 5:52:35,edmunddaniels1@outlook.com,edmunddaniels1@outlook.com ,Ed Daniels ,EE.DD,PAC-ED-Testing and other PAC-ED bots that appear,Accept,Acknowledge,
+9/1/2025 11:57:17,mrpunisher2004@gmail.com,mrpunisher2004@gmail.com,"Shivam,kaustubh,Aditya,Abhay",skykingrayquaza_12436,PAC-Punisher,Accept,Acknowledge,
+9/2/2025 0:44:05,madarshb19@gmail.com,madarshb19@gmail.com,Adarsh Mateti,chinnum97,PAC-HighDragon,Accept,Acknowledge,
+9/2/2025 1:43:46,joshi.bm163@gmail.com,joshi.bm163@gmail.com,1,astroai,PAC-MEW2,Accept,Acknowledge,
+9/2/2025 2:31:17,shuolu.cs@gmail.com,shuolucs@gmail.com,"Xiao Jie, Lu Shuo, Ren Qingnan","believe, shuo, hollow",PAC-Gradient,Accept,Acknowledge,
+10/9/2025 11:38:12,adawq0@gmail.com,adawq0@gmail.com,"Qiao Wang, Ling Wu",qiao,PAC-Q,Accept,Acknowledge,"RL, off-policy learning, curriculum learning"
+9/3/2025 1:43:53,gaimuj32315@gmail.com,ujkim4417@gm.gist.ac.kr,"Gyungbo Kim, Sangyeon Park, Eunju Kwon, Yujin Kim","KGB, 박상연, Eunju Kwon, Yujin Kim",PAC-4thLesson,Accept,Acknowledge,
+9/3/2025 4:39:08,krishnaagarwal16032005@gmail.com,krishnaagarw@iisc.ac.in,Krishna Agarwal,adam09199,PAC-ADAM,Accept,Acknowledge,
+9/4/2025 5:50:18,lucazzedda@gmail.com,luca.zedda@unica.it,1,Snarci,PAC-SNARCI-V1,Accept,Acknowledge,
+9/4/2025 22:49:59,dev.aandyw@gmail.com,dev.aandyw@gmail.com,Andy Wu,,PAC-MAN,Accept,Acknowledge,
+9/6/2025 4:48:02,thrighun@gmail.com,thrighunmartha@gmail.com,Thrighun,Thrighun,PAC-Thrighun,Accept,Acknowledge,
+9/8/2025 19:33:28,thephilliplin@gmail.com,phillip.lin@duke.edu,"Phillip Lin, Alexis fox, Siven Panda",,PAC-Zora,Accept,Acknowledge,
+9/8/2025 20:54:41,huntertr2002@gmail.com,huntertr2002@gmail.com,Hunter,_justconfused,PAC-los-insectos,Accept,Acknowledge,
+9/9/2025 10:43:20,noelle.wongyl@gmail.com,Noelle.wongyl@gmail.com,"Tan Minh Nguyen, Noelle Wong, Ryan Lee","tanminhnguyen0254, noellleon, ryanltz1",PAC-MAI,Accept,Acknowledge,
+9/9/2025 13:25:25,souravsahil100@gmail.com,souravsahil100@gmail.com,Sourav Dutta ,tmberooni,PAC-THEWALL,Accept,Acknowledge,
+9/11/2025 18:41:11,maxpridy@gmail.com,maxpridy@gmail.com,max pridy,,PACtesttesttest111,Accept,Acknowledge,
+9/12/2025 3:40:38,felix.jones42@gmail.com,felix.jones42@gmail.com,Felix Jones,_qed,PAC-BugCatcherFelix,Accept,Acknowledge,
+9/12/2025 11:19:48,achu2995@gmail.com,aishwarya2912@yahoo.com,Aishwarya S Nair,etudette,PAC-ASH-K,Accept,Acknowledge,
+9/14/2025 15:14:06,1edtheman1@gmail.com,Edmunddaniels1@outlook.com,1,EE.DD,PAC-Ed-TESTING,Accept,Acknowledge,
+9/13/2025 9:59:35,shi2xian2wei2@gmail.com,915410741@qq.com,"Xianwei Shi, Kunsheng Zhou, Dongyu Liu, Wenli Zhang",polarisshi,PAC-PA-Agent,Accept,Acknowledge,
+9/14/2025 11:38:35,dmytruto@gmail.com,dmytruto@gmail.com,Dmytro Kozii,dmytro_the_explorer,PAC-Ash,Accept,Acknowledge,
+9/14/2025 19:24:53,ag2285@scarletmail.rutgers.edu,agrandhi4@gmail.com,"Yash Gudimalla, Aman Grandhi, Aditya Sao, Ruthvik Atte, Anish Jha, Sankeerth Bharadwaj, Pranav Bathula","rocklee8558, amanime, sneakycheese3, ratte24_78600, anish_j1, sanny_bhar, ceopranav555",PAC-POKEHACK,Accept,Acknowledge,
+9/14/2025 22:10:12,bbccanson60@gmail.com,992133532@qq.com,Anson,noname466,PAC-STUPID,Accept,Acknowledge,
+9/14/2025 23:19:49,afarooq@ualr.edu,afarooq@ualr.edu,Ahmad Farooq,ahmadfarooq0809,PAC-Exp-05,Accept,Acknowledge,
+9/15/2025 10:54:37,k7agar@gmail.com,k7agar@gmail.com,"Atharva Kshirsagar, Akshat Jaiswal, Prajwal Avhad","vovw, umbrella___ ,crisiumnih ",PAC-losster	,Accept,Acknowledge,
+9/15/2025 8:23:14,2564696532@qq.com,sgao068@connect.hkust-gz.edu.cn,"Songyang Gao；
+Xuewei Huang；
+Boyang Ji；",red bird,PAC-RBM,Accept,Acknowledge,
+9/15/2025 22:25:47,wfteng@gmail.com,wongfongteng@yahoo.com,1,wong6837,PAC-WFT,Accept,Acknowledge,Typical LLM method
+9/16/2025 22:06:09,zhangzzzgog@gmail.com,zhang_yilin@ruc.edu.cn,"Zhang Yilin, Zhao Zhuoxi","triplez, xx",PAC-Ditto,Accept,Acknowledge,"RL, LLM maybe. Keep discovering on it."
+9/24/2025 0:18:46,wzylife15@gmail.com,348899604@qq.com,PokeAgentMaster,,PAC-Bryce,Accept,Acknowledge,RL/LLM
+10/9/2025 21:04:00,inaclude2fy@gmail.com,ssccinng@outlook.com,"scixing,  DeathwingHeyy, Separation",scixing,PAC-PCL,Accept,Acknowledge,LLM/RL
+9/28/2025 15:42:56,isaiahcooperdump@gmail.com,isaiahcooperdump@gmail.com,Isaiah Rivera ,isaiah1546,PAC-tatoChip,Accept,Acknowledge,We will be learning gen1 OU using RL. Specifically PPO self play. 
+9/29/2025 22:28:06,cjbarb7@gmail.com,cjbarb7@gmail.com,"CJ Barberan, Haruya Shida, June Feng, Tian Xia, Ruqian Chen, Jessica Lin, Nutan Sahoo, Sidharth Vasudev","cjbarb7, CRQ, Oneday321, tian_39685, j.ssica",PAC-ChoiceScarfCabaret,Accept,Acknowledge,LLM approach- still working on the prompts and what to retrieve since it does hallucinate and has hallucinated with what it thinks it has with type advantaged especially when seeing the 'reasoning'
+9/30/2025 0:36:22,haihaishen021202@gmail.com,haihaishen021202@gmail.com,"Mei Jiang, Haihai Shen, Houping Yue, Ning Wang, Zixiang Di, Wenjing Hong, Bingdong Li","maychelle0636, haihai007222, sanjing_y_81665, staredens159_63884, aaron_di, mira_verse, abd_0914",PAC-EPPF,Accept,Acknowledge,gen、RL/LLM
+9/30/2025 19:04:40,kamsties10@gmail.com,markus.kamsties@gmail.com,1,._bob_,PAC-AI-IS-COOL,Accept,Acknowledge,For Gen1 I am going to try diffrent RL methods. For Gen9 I am going to try diffrent LLMs.
+10/5/2025 15:46:14,patrickmariglia@gmail.com,mariglia4423@gmail.com,Patrick Mariglia (pmariglia),pmariglia,PAC-FoulPlay,Accept,Acknowledge,monte carlo tree search with handcrafted evaluation function
+10/7/2025 4:28:58,bolling.adrien@gmail.com,bolling.adrien@gmail.com,"Adrien Bolling, Pierre Glandon, Dorian Joubaud, Guilain Leduc, Cyrille Siouffi",".gourmet, luceurre, joker0438, inpprenable, orionss",PAC-SnTeam,Accept,Acknowledge,"RL-focused appraoch. Namely a number of alternative takes on the base Metamon approach (Change of network, change of tokenizing, enriched observations, more comprehensive reward function, specialization on gen1ou)"
+10/8/2025 3:07:23,s6tibert@gmail.com,bertram_timo@gmx.de,"Timo Bertram, Jakob Droste,  Manuel Eberhardinger, Ronja Fuchs",,PAC-GCOGS,Accept,Acknowledge,Behavioural cloning with an auxiliary action-conditioned JEPA objective. The model is a Transformer architecture (on a text and turn-level) using action/switch embeddings.
+10/8/2025 10:48:00,matteo.papini@unimi.it,matteo.papini@unimi.it,"Matteo Papini, Gianmarco Genalti, Alberto Marchesi, Alessio De Vito, Andrea Chizzola, Piergiuseppe Pezzoli, Pierriccardo Olivieri, Tatjana Chavdarova",mpapini,PAC-INI,Accept,Acknowledge,Moves suggested by an LLM fine-tuned on high-elo GEN9OU human matches using behavioral cloning and LoRA. Battle logs are pre-processed so that prompts can be considered as approximately Markovian states.
+10/8/2025 11:46:08,huangrickh@gmail.com,huangrickh@gmail.com,Rick Huang,ShiningSnow,PAC-ShiningSnow,Accept,Acknowledge,LLM
+10/8/2025 14:43:28,andynguyen.aln@gmail.com,andynguyen.aln@gmail.com,Andy Nguyen,"""notspinach"", ""andy n"" on the PokeAgent server",PAC-LeafyGreens,Accept,Acknowledge,RL on LLMs using behavioral cloning and other finetuning approaches. 
+10/8/2025 23:23:41,vaibhav@blackspark.com,vaibhav@blackspark.com,"Vaibhav Hariani
+David Rubenstein
+Joseph Suarez","_tipa_
+thatguy11325",PAC-Puffer,Accept,Acknowledge,"Using Pufferlib, an RL acceleration framework, and a completely from scratch ground-up environment to bootstrap a considerably smaller model. "
+10/9/2025 2:04:12,thuhuangs09@gmail.com,thuhuangs09@gmail.com,Huang Shan,,PAC-hs3180,Accept,Acknowledge,Combine RL and LLM
+10/9/2025 13:03:39,dchristl123@gmail.com,dchristl123@gmail.com,3,"underdogg, neural, gerald",PAC-piploop,Accept,Acknowledge,"Scale up RL w/ tweaks to MM architecture, emphasis on teambuilding (different k dueling bandits strats across large team sets), potentially AC-informed MCTS"
+10/9/2025 23:45:40,cgbielick@gmail.com,cgbielick@gmail.com,Catherine Bielick MD,Cathaplexy ,PAC-Bill'sPC,Accept,Acknowledge,"Expanded the observation space considerably for the RL baseline. Added top team extraction to the self play component of training, trained with an augmented 1800+ ELO scraped showdown data set and Implicit Q-Learning. Added VAE hybrid training for dual policy training and finally reinforcement learning from contrast distillation after extracting preferences from only the 1800+ ELO data set. Specialized on gen9ou. "
+10/10/2025 4:37:00,sosomillion244@gmail.com,Sosomillion244@gmail.com,Khadija ,Kikiabd7344,PAC-kiki,Accept,Acknowledge,RL/LLM
+10/10/2025 6:36:27,hida1211@gmail.com,hida1211@gmail.com,"Keisuke Hidaka, Takashi Morimatsu","hida1211_52931, kurohyou64",PAC-hida,Accept,Acknowledge,Collegial decision-making and mid-term strategy maintenance by multiple LLM agents
+10/10/2025 6:47:34,nic.holas001@outlook.com,nicholas.kb.tan@u.nus.edu,Nicholas Tan Kian Boon,plebias_001,PAC-sphealbowl,Accept,Acknowledge,LLM-based reflection and memory-planning system
+10/10/2025 19:30:03,rmohanty94@gmail.com,rmohanty94@gmail.com,Rohit Mohanty,rohitm7,PAC-ROM-NYT9,Accept,Acknowledge,I plan on using a combination of LLM agents and RL strategies.
+10/11/2025 11:09:50,kun.kerdthaisong@gmail.com,kun.kerdthaisong@gmail.com,9,"august2711,sigma_alphawolf99,hatwithcat",PAC-August,Accept,Acknowledge,"We propose a reinforcement learning (RL) framework enhanced by a Large Language Model (LLM) with episodic memory to improve adaptive strategy in Pokémon battles. The RL agent learns through self-play, while episodic memory stores past battle trajectories, key decisions, and outcomes for recall-based tuning. The LLM interprets contextual patterns from memory, providing reasoning on opponent behavior and suggesting move adaptations. This integration enables dynamic learning, allowing the agent to refine strategies based on prior experiences and evolving battle contexts, resulting in more human-like, memory-driven decision-making and improved long-term performance."
+10/11/2025 12:03:12,jamason@gmail.com,jamason@gmail.com,MetaHorns,"Sojo, Niv",PAC-MetaHorns,Accept,Acknowledge,We used self-play reinforcement learning and data informed team selection to fine-tune the model

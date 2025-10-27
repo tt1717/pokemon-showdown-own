@@ -186,6 +186,15 @@ if (Config.startuphook) {
 	process.nextTick(Config.startuphook);
 }
 
+/*********************************************************
+ * Initialize bracket tournament if enabled
+ *********************************************************/
+
+if (Config.bracketmode) {
+	const {Bracket} = require('./bracket-manager');
+	void Bracket.loadOrInitialize();
+}
+
 if (Config.ofemain) {
 	try {
 		require.resolve('node-oom-heapdump');
