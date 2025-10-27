@@ -50,6 +50,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// Custom timer settings for AI tournaments
 			'Timer Starting = 600', 'Timer Grace = 60', 'Timer Max Per Turn = 150'
 		],
-		banlist: ['Uber', 'AG', 'Arena Trap', 'Moody', 'Shadow Tag', 'King\'s Rock', 'Razor Fang', 'Baton Pass', 'Last Respects', 'Shed Tail', 'Zoroark', 'Revival Blessing'],
+		banlist: ['Uber', 'AG', 'Arena Trap', 'Moody', 'Shadow Tag', 'King\'s Rock', 'Razor Fang', 'Baton Pass', 'Last Respects', 'Shed Tail', 'Zoroark', 'Revival Blessing', 'Zorua'],
 	},
 ]; 
