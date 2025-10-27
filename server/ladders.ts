@@ -337,33 +337,45 @@ class Ladder extends LadderStore {
 		// users must be different
 		if (new Set(users).size !== users.length) return false;
 
-		if (Config.noipchecks) {
-			users[0].lastMatch = users[1].id;
-			users[1].lastMatch = users[0].id;
-			return true;
+		// users must not have been matched immediately previously (unless explicitly allowed)
+		if (!Config.allowrepeatmatchups) {
+			for (const user of users) {
+				if (userids.includes(user.lastMatch)) {
+					// Check if enough time has passed to allow repeat matchup
+					if (Config.repeatmatchuptimeout > 0) {
+						const times = matches.map(([search]) => search.time);
+						const minWaitTime = Math.min(...times);
+						const elapsed = (Date.now() - minWaitTime) / 1000; // Convert to seconds
+						if (elapsed < Config.repeatmatchuptimeout) {
+							return false; // Still within timeout period
+						}
+						// Timeout expired, allow the repeat matchup
+					} else {
+						return false; // No timeout configured, block repeat matchups
+					}
+				}
+			}
 		}
 
-		// users must have different IPs
-		if (new Set(users.map(user => user.latestIp)).size !== users.length) return false;
-
-		// users must not have been matched immediately previously
-		for (const user of users) {
-			if (userids.includes(user.lastMatch)) return false;
+		// users must have different IPs (unless noipchecks is enabled)
+		if (!Config.noipchecks) {
+			if (new Set(users.map(user => user.latestIp)).size !== users.length) return false;
 		}
 
-		// search must be within range
-		let searchRange = 100;
-		const times = matches.map(([search]) => search.time);
-		const elapsed = Date.now() - Math.min(...times);
-		if (formatid === `gen${Dex.gen}ou` || formatid === `gen${Dex.gen}randombattle`) {
-			searchRange = 50;
-		}
+		// search must be within Elo range (unless noelocheks is enabled)
+		if (!Config.noelocheks) {
+			let searchRange = 150; // Start wider for all formats
+			const times = matches.map(([search]) => search.time);
+			const elapsed = Date.now() - Math.min(...times);
 
-		searchRange += elapsed / 300; // +1 every .3 seconds
-		if (searchRange > 300) searchRange = 300 + (searchRange - 300) / 10; // +1 every 3 sec after 300
-		if (searchRange > 600) searchRange = 600;
-		const ratings = matches.map(([search]) => search.rating);
-		if (Math.max(...ratings) - Math.min(...ratings) > searchRange) return false;
+			// Faster expansion: +1 every 0.1 seconds initially, then accelerating
+			searchRange += elapsed / 100; // +1 every 0.1 seconds (3x faster)
+			if (searchRange > 200) searchRange = 200 + (elapsed - 20000) / 50; // +1 every 0.05 sec after 200
+			if (searchRange > 500) searchRange = 500 + (elapsed - 35000) / 25; // +1 every 0.025 sec after 500
+			if (searchRange > 1000) searchRange = 1000; // Cap at 1000
+			const ratings = matches.map(([search]) => search.rating);
+			if (Math.max(...ratings) - Math.min(...ratings) > searchRange) return false;
+		}
 
 		matches[0][1].lastMatch = matches[1][1].id;
 		matches[1][1].lastMatch = matches[0][1].id;
